@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Nov 10 12:06:28 2018
+Created on Tue Nov  6 12:25:01 2018
 
 @author: Irina
 """
+
+# import required libraries
+import pandas as pd
+import numpy as np
+
 
 training = pd.read_csv('training.csv', encoding='cp1252')
 training.head()
@@ -12,11 +17,9 @@ test = pd.read_csv('test.csv',encoding='cp1252')
 test.head()
 
 
-
-
 # Data Clearance training dataset
-training.drop(['BESTELL_ID','OBS_ID','WGH1_ID','WGH3_ID','WGH4_ID','DIVISION_DESC_SORT','WGH4_DESC'],axis=1,inplace=True)
-test.drop(['BESTELL_ID','OBS_ID','WGH1_ID','WGH3_ID','WGH4_ID','DIVISION_DESC_SORT','WGH4_DESC'],axis=1,inplace=True)
+training.drop(['BESTELL_ID','OBS_ID','WGH1_ID','WGH3_ID','WGH4_ID','DIVISION_DESC_SORT','WGH4_DESC','BEWERTUNG'],axis=1,inplace=True)
+test.drop(['BESTELL_ID','OBS_ID','WGH1_ID','WGH3_ID','WGH4_ID','DIVISION_DESC_SORT','WGH4_DESC','BEWERTUNG'],axis=1,inplace=True)
 
 training['BRAND_ID'].fillna(0,inplace=True)
 training['PREIS_DISCOUNT'].fillna(0,inplace=True)
@@ -30,10 +33,10 @@ training['AIRING']=training['NEW_ITEM_FLG']+training['AIRING_23_FLG']+training['
 training.drop(['NEW_ITEM_FLG','AIRING_23_FLG','AIRING_456_FLG'],axis=1,inplace=True)
 
 training['WGH3_DESC'].replace('WGH-Stufe Eigenmarken',0,inplace=True)
-training['WGH3_DESC'].replace('WGH-Stufe Marken National',0,inplace=True)
+training['WGH3_DESC'].replace('WGH-Stufe Marken National',1,inplace=True)
 
 
-#dummies colours
+#DUMMIES FARBE - DUMMIES COLOR GROUPED
 training['FARBE'].replace(['SILBERGRAU','GRAU','ANTHRAZIT','GRAU MELANGE','ANTHRAZIT MELANGE','HELLGRAU',
 'STEINGRAU','DUNKELGRAU','STONE'],1,inplace=True)
 training['FARBE'].replace(['SCHWARZ'],2,inplace=True)
@@ -63,18 +66,64 @@ training['FARBE'].replace(['GELB'],24,inplace=True)
 
 
 training['PREISKLASSE_DESC']=training['PREISKLASSE_DESC'].str[:2]
-
-
 training['PREISKLASSE_DESC']=training['PREISKLASSE_DESC'].convert_objects(convert_numeric=True)
 
 
 # DATE and WEEKDAY
 training['SHOW_DATUM']=pd.to_datetime(training['SHOW_DATUM'])
 training['DAY_OF_WEEK'] = training['SHOW_DATUM'].dt.day_name()
+training["DAY_OF_WEEK"] = training["DAY_OF_WEEK"].astype('category')
+training.dtypes
+training["DAY_OF_WEEK"] = training["DAY_OF_WEEK"].cat.codes
+training.head()
+
+
 
 # AMOUNT TOTAL
 training['TOTAL_AMOUNT']=training['MENGE_ECOM']+training['MENGE_CALL']
 
+# KANAL - CHANNEL
+training["KANAL"] = training["KANAL"].astype('category')
+training.dtypes
+training["KANAL"] = training["KANAL"].cat.codes
+training.head()
 
+
+# WG_DESC
+training["WG_DESC"] = training["WG_DESC"].astype('category')
+training.dtypes
+training["WG_DESC"] = training["WG_DESC"].cat.codes
+training.head()
+
+#WGH1_DESC
+training["WGH1_DESC"] = training["WGH1_DESC"].astype('category')
+training.dtypes
+training["WGH1_DESC"] = training["WGH1_DESC"].cat.codes
+training.head()
+
+#GROESSE - SIZE
+training["GROESSE"] = training["GROESSE"].astype('category')
+training.dtypes
+training["GROESSE"] = training["GROESSE"].cat.codes
+training.head()
+
+
+# PREIS LABEL DESC
+training["PREIS_LABEL_DESC"] = training["PREIS_LABEL_DESC"].astype('category')
+training.dtypes
+training["PREIS_LABEL_DESC"] = training["PREIS_LABEL_DESC"].cat.codes
+training.head()
+
+
+
+#Objects into numeric Values
+training['FAKTOR']=training['FAKTOR'].convert_objects(convert_numeric=True)
+training['FARBE']=training['FARBE'].convert_objects(convert_numeric=True)
+training['TOTAL_AMOUNT']=training['TOTAL_AMOUNT'].convert_objects(convert_numeric=True)
+training['PREIS_DISCOUNT']=training['PREIS_DISCOUNT'].convert_objects(convert_numeric=True)
+training['WG_DESC']=training['WG_DESC'].convert_objects(convert_numeric=True)
+
+
+# Info data
 info = training.info()
 description = training.describe()
